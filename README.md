@@ -1,19 +1,19 @@
-# DHG2016 三维骨架缺失修补训练项目
+# DHG2016 3D Skeleton Missing‑Value Completion Training Project
 
-本项目只读取 DHG2016 / DHG-14/28 的 `skeleton_world.txt` 三维骨架，不使用 RGB 和深度图。包含：
+This project only reads the `skeleton_world.txt` 3D skeleton data from DHG2016 / DHG‑14/28. RGB and depth images are not used. Features include:
 
-- 递归读取 `gesture/finger/subject/essai` 目录；
-- 数据统计、三维骨架 PNG/GIF 预览；
-- 随机关节点、整根手指、连续时间块、指尖、整帧缺失；
-- 图卷积局部几何分支 + 时序 Transformer 分支 + 门控融合；
-- 坐标、速度、骨长、动作分类、手指配置联合目标；
-- 训练/验证日志、最佳模型、定期模型、自动续训；
-- 不同缺失类型与比例的批量评估；
-- 修补前后 PNG/GIF 可视化。
+- Recursively traverse directories of `gesture/finger/subject/essai`;
+- Dataset statistics, 3D skeleton preview in PNG/GIF format;
+- Random missing scenarios: random joints, entire fingers, continuous time blocks, fingertips, and full‑frame loss;
+- Graph convolution local geometric branch + temporal Transformer branch + gated fusion;
+- Joint optimization objective: coordinates, velocity, bone length, action classification, finger configuration;
+- Training/validation logging, best‑checkpoint saving, periodic checkpoint saving, automatic resume training;
+- Batch evaluation across different missing types and missing ratios;
+- PNG/GIF visualization for raw vs completed skeleton sequences.
 
-## 1. 数据目录
+## 1. Dataset Directory
 
-常见结构：
+Typical folder structure：
 
 ```text
 DHG2016/
@@ -24,12 +24,12 @@ DHG2016/
                 └── skeleton_world.txt
 ```
 
-读取器兼容：
+Reader supports two data formats:
 
-- 每一帧一行、每行 66 个数字（22×3）；
-- 每 22 行组成一帧、每行 3 个数字。
+- One frame per line, each line contains 66 numbers (22 joints × 3 coordinates);
+- One joint coordinate per line (3 numbers per line), every 22 lines compose one frame.
 
-## 2. 安装
+## 2. Installation
 
 ```bash
 cd dhg2016_repairformer
@@ -41,22 +41,22 @@ source .venv/bin/activate
 pip install -r requirements.txt
 ```
 
-## 3. 修改数据路径
+## 3. Modify Dataset Path
 
-编辑 `configs/default.yaml`：
+Edit `configs/default.yaml`：
 
 ```yaml
 data:
   root: "D:/datasets/DHG2016"
 ```
 
-也可以运行时覆盖：
+You can also override the path at runtime:
 
 ```bash
 python inspect_dataset.py --data-root "D:/datasets/DHG2016"
 ```
 
-## 4. 先检查数据和关节连线
+## 4. Inspect Dataset and Joint Edges
 
 ```bash
 python inspect_dataset.py \
@@ -66,16 +66,16 @@ python inspect_dataset.py \
   --output-dir dataset_preview
 ```
 
-输出：
+Output file：
 
 ```text
 dataset_preview/skeleton_preview.png
 dataset_preview/skeleton_preview.gif
 ```
 
-**重要：**配置中的 `edges` 默认采用“腕部+掌心+每根手指4关节”的常见22点排列。不同版本的关节编号可能不同。请通过预览确认连线；若不正确，只修改 `data.edges`、`finger_groups` 和 `fingertips`，其余代码不用改。
+**Important Note**: The default `edges` in configuration follows the standard 22‑joint layout: wrist + palm + 4 joints per finger. Joint indices may vary across different dataset versions. Please verify skeleton connectivity via preview outputs. If connections are incorrect, only modify `data.edges`, `finger_groups` and `fingertips`. No other code modification is required.
 
-## 5. 开始训练
+## 5. Start Training
 
 ```bash
 python train.py \
@@ -84,7 +84,7 @@ python train.py \
   --output-dir runs/experiment_01
 ```
 
-训练输出：
+Training outputs are organized as below：
 
 ```text
 runs/experiment_01/
@@ -97,11 +97,12 @@ runs/experiment_01/
     └── epoch_005.png ...
 ```
 
-`best.pt` 按验证集缺失点 MPJPE 保存；`latest.pt` 每轮覆盖，供断点续训。
+- `best.pt`: Saved according to missing‑joint MPJPE on validation set.
+- `latest.pt`: Overwritten after every epoch for training resumption
 
-## 6. 继续训练
+## 6. Resume Training
 
-指定模型：
+Resume from specified checkpoint:
 
 ```bash
 python train.py \
@@ -109,7 +110,7 @@ python train.py \
   --resume runs/experiment_01/latest.pt
 ```
 
-自动查找输出目录中的 `latest.pt`：
+Auto‑detect `latest.pt` inside output directory:
 
 ```bash
 python train.py \
@@ -117,17 +118,17 @@ python train.py \
   --resume auto
 ```
 
-要增加总训练轮数，先修改 `used_config.yaml` 中的 `train.epochs`。
+To increase total training epochs, modify `train.epochs` inside `used_config.yaml`.
 
-## 7. 绘制训练曲线
+## 7. Plot Training Curves
 
 ```bash
 python plot_history.py --history runs/experiment_01/history.csv
 ```
 
-输出 loss、MPJPE 曲线。
+This script generates loss and MPJPE curves.
 
-## 8. 测试集批量评估
+## 8. Batch Evaluation on Test Set
 
 ```bash
 python evaluate.py \
@@ -136,9 +137,9 @@ python evaluate.py \
   --output runs/experiment_01/test_results.json
 ```
 
-程序会测试配置中的不同缺失类型与 10%–40% 缺失比例。
+The script evaluates pre‑configured missing types with missing ratios ranging from 10% to 40%.
 
-## 9. 预览单个修补过程
+## 9. Preview Single Sample Completion
 
 ```bash
 python predict_repair.py \
@@ -150,26 +151,26 @@ python predict_repair.py \
   --output-dir repair_preview
 ```
 
-输出：
+Output files:
 
 ```text
 repair_preview/repair_comparison.png
 repair_preview/repair_animation.gif
 ```
 
-## 10. 验证代码能否运行
+## 10. Sanity Check without Real Dataset
 
-不需要真实数据，运行合成数据冒烟测试：
+Run smoke test with synthetic data to verify pipeline correctness:
 
 ```bash
 python smoke_test.py
 ```
 
-测试会完成一次数据读取、前向传播、反向传播、验证、模型保存和预览生成。
+The smoke test covers data loading, forward pass, backward pass, validation, model checkpointing and preview rendering.
 
-## 11. 目标函数
+## 11. Loss Function
 
-默认：
+Default loss formulation:
 
 ```text
 L = 1.0 Lcoord
@@ -179,22 +180,22 @@ L = 1.0 Lcoord
   + 0.1 Lfinger
 ```
 
-- `Lcoord`：只计算人为缺失关节点的 Smooth L1；
-- `Lvelocity`：修补轨迹与真实轨迹的速度误差；
-- `Lbone`：受缺失影响的骨骼边长度误差；
+- `Lcoord`: Smooth L1 loss calculated only on artificially masked missing joints;
+- `Lvelocity`: Trajectory velocity error between completed sequence and ground truth;
+- `Lbone`: Length error of bones affected by missing joints.
 
 
-权重均可在 YAML 中修改，便于开展消融实验。
+All loss weights can be adjusted in yaml config for ablation studies.
 
-## 12. 论文实验建议
+## 12. Suggested Experiments for Paper
 
-至少保留以下对照：
+At least include the following baselines and ablation groups:
 
-1. 线性插值；
-2. 仅坐标损失；
-3. 坐标 + 速度；
-4. 坐标 + 速度 + 骨长；
-5. 完整模型（加入动作与手指配置语义）；
-6. 分别去掉几何分支、时间分支和门控融合。
+1. Linear interpolation;
+2. Coordinate‑only loss;
+3. Coordinate + velocity loss;
+4. Coordinate + velocity + bone‑length loss;
+5. Full model (with gesture and finger configuration semantic losses);
+6. Full model ablations: remove geometric branch, remove temporal branch, remove gated fusion respectively.
 
-报告缺失点 MPJPE、速度误差、骨长误差以及不同缺失模式下的结果。
+Report metrics: missing‑joint MPJPE, velocity error, bone‑length error, and quantitative results under different missing patterns.

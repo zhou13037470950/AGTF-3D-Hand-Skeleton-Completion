@@ -1,0 +1,72 @@
+# RepairFormer 消融实验控制文件
+# 基础模型、数据划分、掩码分布和损失初始权重来自 --base-config。
+# 完整模型 full 已训练完成：不重复训练，只在统一测试时读取原 best.pt。
+
+ablation:
+  output_root: runs/ablation1
+
+  # 需要从头训练的消融变体。
+  # full 已有权重，因此在训练列表中注释掉。
+  train_variants:
+    # - full
+    - no_anchor
+    - no_geometry
+    - no_temporal
+    - no_gate
+    - no_refinement
+    # - no_velocity_loss
+    # - no_acceleration_loss
+    # - no_structure_loss
+    # - no_consistency_loss
+    # - no_fingertip_weight
+
+  # 统一测试列表。
+  # full 必须保留，用来计算每个消融变体相对于完整模型的变化。
+  evaluate_variants:
+    - full
+    - no_anchor
+    - no_geometry
+    - no_temporal
+    - no_gate
+    - no_refinement
+    # - no_velocity_loss
+    # - no_acceleration_loss
+    # - no_structure_loss
+    # - no_consistency_loss
+    # - no_fingertip_weight
+
+  # 正式论文建议至少3次独立随机种子，报告 mean ± std。
+  repeats: 1
+  start_seed: 42
+  # start_seed: 45
+  # # 也可显式指定：
+  # seeds: [42, 43, 44]
+
+  # 已有完整模型权重。
+  # 请按本机实际路径修改。
+  checkpoints:
+    full: runs/exp_dhg2016/best.pt
+
+  # 其他消融模型训练完成后，默认从以下位置读取：
+  # runs/ablation/full/seed_<seed>/best.pt
+
+  # 每隔多少轮执行一次与正式测试相同的完整验证网格。
+  # best.pt 按完整验证 MPJPE 保存。
+  full_grid_val_every: 5
+
+  # 消融实验独立训练参数。
+  # 这些参数只覆盖 configs/default.yaml 中 train 下的同名字段；
+  # 没有写出的字段继续沿用基础配置。
+  train:
+    epochs: 500
+    batch_size: 32
+    learning_rate: 0.0003
+    weight_decay: 0.0001
+    grad_clip: 1.0
+    amp: true
+    save_every: 20
+    early_stopping_patience: 25
+
+  # 推理计时先预热，再取多次测量的中位数。
+  timing_warmup: 20
+  timing_repeats: 50

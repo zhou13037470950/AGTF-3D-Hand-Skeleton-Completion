@@ -1,0 +1,201 @@
+seed: 42
+device: auto
+data:
+  root: ./DHG2016
+  skeleton_filename: skeleton_world.txt
+  sequence_length: 32
+  num_joints: 22
+  root_joint: 0
+  # center_mode: first_root
+  center_mode: per_frame_root
+  scale_mode: median_bone
+  preload: true
+  num_workers: 0
+  train_subjects:
+  - 1
+  - 2
+  - 3
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  - 10
+  - 11
+  - 12
+  - 13
+  - 14
+  val_subjects:
+  - 15
+  - 16
+  - 17
+  test_subjects:
+  - 18
+  - 19
+  - 20
+  edges:
+  - - 0
+    - 1
+  - - 1
+    - 2
+  - - 2
+    - 3
+  - - 3
+    - 4
+  - - 4
+    - 5
+  - - 1
+    - 6
+  - - 6
+    - 7
+  - - 7
+    - 8
+  - - 8
+    - 9
+  - - 1
+    - 10
+  - - 10
+    - 11
+  - - 11
+    - 12
+  - - 12
+    - 13
+  - - 1
+    - 14
+  - - 14
+    - 15
+  - - 15
+    - 16
+  - - 16
+    - 17
+  - - 1
+    - 18
+  - - 18
+    - 19
+  - - 19
+    - 20
+  - - 20
+    - 21
+  finger_groups:
+  - - 2
+    - 3
+    - 4
+    - 5
+  - - 6
+    - 7
+    - 8
+    - 9
+  - - 10
+    - 11
+    - 12
+    - 13
+  - - 14
+    - 15
+    - 16
+    - 17
+  - - 18
+    - 19
+    - 20
+    - 21
+  fingertips:
+  - 5
+  - 9
+  - 13
+  - 17
+  - 21
+
+
+
+
+# mask:
+#   min_ratio: 0.10
+#   max_ratio: 0.40
+#   types:
+#     random_joint: 0.15
+#     whole_finger: 0.30
+#     temporal_block: 0.25
+#     fingertips: 0.25
+#     whole_frame: 0.05
+
+
+
+mask:
+  min_ratio: 0.1
+  max_ratio: 0.4
+  types:
+    random_joint: 0.4
+    whole_finger: 0.25 
+    temporal_block: 0.2
+    fingertips: 0.1
+    whole_frame: 0.05
+
+model:
+  d_model: 128
+  nhead: 8
+  geometry_layers: 3
+  temporal_layers: 4
+  decoder_layers: 2
+  dim_feedforward: 256
+  dropout: 0.1
+  use_anchor_residual: true
+  use_refinement: true
+  refinement_layers: 2
+loss:
+  coord: 1.0
+  velocity: 0.4
+  acceleration: 0.15
+  bone: 0.25
+  direction: 0.1
+  consistency: 0.2
+  fingertip_weight: 1.5
+  fingertip_indices:
+  - 5
+  - 9
+  - 13
+  - 17
+  - 21
+
+
+# train:
+#   output_dir: runs/repairformer_optimized
+#   epochs: 300
+#   batch_size: 24
+#   learning_rate: 0.00005
+#   weight_decay: 0.0001
+#   grad_clip: 1.0
+#   amp: true
+#   save_every: 10
+#   preview_every: 10
+#   early_stopping_patience: 10
+#   resume: null
+
+train:
+  output_dir: runs/repairformer_optimized
+  epochs: 500
+  batch_size: 32
+  learning_rate: 0.0003
+  weight_decay: 0.0001
+  grad_clip: 1.0
+  amp: true
+  save_every: 20
+  preview_every: 10
+  early_stopping_patience: 25
+  resume: null
+eval:
+  mask_types:
+  - random_joint
+  - whole_finger
+  - temporal_block
+  - fingertips
+  - whole_frame
+  ratios:
+  - 0.1
+  - 0.2
+  - 0.3
+  - 0.4
+  pck_thresholds:
+  - 0.1
+  - 0.2
+  - 0.5
+  fixed_seed: 1021

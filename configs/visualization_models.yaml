@@ -1,0 +1,60 @@
+# 可视化模型清单。路径相对于项目根目录。
+# kind支持：proposed / ablation / comparison
+
+data_config: configs/default.yaml
+
+models:
+  proposed:
+    label: Proposed AGTF
+    kind: proposed
+    config: configs/default.yaml
+    checkpoint: runs/exp_dhg2016/best.pt
+
+  full_ablation:
+    label: Full model (ablation run)
+    kind: ablation1
+    variant: full
+    config: runs/exp_dhg2016/used_config.yaml
+    checkpoint: runs/exp_dhg2016/best.pt
+
+  no_geometry:
+    label: w/o geometry
+    kind: ablation1
+    variant: no_geometry
+    config: runs/ablation1/no_geometry/seed_42/used_config.yaml
+    checkpoint: runs/ablation1/no_geometry/seed_42/best.pt
+
+  no_temporal:
+    label: w/o temporal
+    kind: ablation1
+    variant: no_temporal
+    config: runs/ablation1/no_temporal/seed_42/used_config.yaml
+    checkpoint: runs/ablation1/no_temporal/seed_42/best.pt
+
+  no_anchor:
+    label: w/o anchor
+    kind: ablation1
+    variant: no_anchor
+    config: runs/ablation1/no_anchor/seed_42/used_config.yaml
+    checkpoint: runs/ablation1/no_anchor/seed_42/best.pt
+
+  anatomy_mae:
+    label: Anatomy-MAE
+    kind: comparison
+    model_name: anatomy_mae
+    config: configs/comparison.yaml
+    checkpoint: comparison_runs_six3/anatomy_mae/best.pt
+
+  no_gate:
+    label: w/o adaptive gate
+    kind: ablation1
+    variant: no_gate
+    config: runs/ablation1/no_gate/seed_42/used_config.yaml
+    checkpoint: runs/ablation1/no_gate/seed_42/best.pt
+
+  no_refinement:
+    label: w/o refinement
+    kind: ablation1
+    variant: no_refinement
+    config: runs/ablation1/no_refinement/seed_42/used_config.yaml
+    checkpoint: runs/ablation1/no_refinement/seed_42/best.pt
